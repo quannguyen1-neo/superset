@@ -78,6 +78,13 @@ import DuplicateDatasetModal from 'src/features/datasets/DuplicateDatasetModal';
 import type DatasetType from 'src/types/Dataset';
 import SemanticViewEditModal from 'src/features/semanticViews/SemanticViewEditModal';
 import AddSemanticViewModal from 'src/features/semanticViews/AddSemanticViewModal';
+import {
+  datasetLabel,
+  datasetLabelLower,
+  datasetsLabel,
+  datasetsLabelLower,
+  databaseLabel,
+} from 'src/utils/semanticLayerLabels';
 import { useSelector } from 'react-redux';
 import { QueryObjectColumns } from 'src/views/CRUD/types';
 import { WIDER_DROPDOWN_WIDTH } from 'src/components/ListView/utils';
@@ -169,7 +176,11 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
     state: { bulkSelectEnabled },
     hasPerm,
     toggleBulkSelect,
-  } = useListViewResource<Dataset>('dataset', t('dataset'), addDangerToast);
+  } = useListViewResource<Dataset>(
+    'dataset',
+    datasetLabelLower(),
+    addDangerToast,
+  );
 
   // Combined endpoint state
   const [datasets, setDatasets] = useState<Dataset[]>([]);
@@ -236,7 +247,9 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
         setDatasetCount(json.count);
       })
       .catch(() => {
-        addDangerToast(t('An error occurred while fetching datasets'));
+        addDangerToast(
+          t('An error occurred while fetching %s', datasetsLabelLower()),
+        );
       })
       .finally(() => {
         setLoading(false);
@@ -303,7 +316,7 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
   const handleDatasetImport = () => {
     showImportModal(false);
     refreshData();
-    addSuccessToast(t('Dataset imported'));
+    addSuccessToast(t('%s imported', datasetLabel()));
   };
 
   const canEdit = hasPerm('can_write');
@@ -341,7 +354,10 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
         })
         .catch(() => {
           addDangerToast(
-            t('An error occurred while fetching dataset related data'),
+            t(
+              'An error occurred while fetching %s related data',
+              datasetLabelLower(),
+            ),
           );
         });
     },
@@ -385,7 +401,12 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
         });
       } catch (error) {
         setPreparingExport(false);
-        addDangerToast(t('There was an issue exporting the selected datasets'));
+        addDangerToast(
+          t(
+            'There was an issue exporting the selected %s',
+            datasetsLabelLower(),
+          ),
+        );
       }
     },
     [addDangerToast, setPreparingExport],
@@ -495,7 +516,7 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
             original: { database },
           },
         }: any) => database?.database_name || '-',
-        Header: t('Database'),
+        Header: databaseLabel(),
         accessor: 'database.database_name',
         size: 'xl',
         id: 'database.database_name',
@@ -723,7 +744,7 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
               operator: FilterOperator.Equals,
               unfilteredLabel: t('All'),
               selects: [
-                { label: t('Database'), value: 'database' },
+                { label: databaseLabel(), value: 'database' },
                 { label: t('Semantic Layer'), value: 'semantic_layer' },
               ],
             },
@@ -773,7 +794,7 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
             },
           ]),
       {
-        Header: t('Database'),
+        Header: databaseLabel(),
         key: 'database',
         id: 'database',
         input: 'select',
@@ -783,7 +804,11 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
           'dataset',
           'database',
           createErrorHandler(errMsg =>
-            t('An error occurred while fetching datasets: %s', errMsg),
+            t(
+              'An error occurred while fetching %s: %s',
+              datasetsLabelLower(),
+              errMsg,
+            ),
           ),
         ),
         paginate: true,
@@ -817,7 +842,8 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
           'dataset',
           createErrorHandler(errMsg =>
             t(
-              'An error occurred while fetching dataset owner values: %s',
+              'An error occurred while fetching %s owner values: %s',
+              datasetLabelLower(),
               errMsg,
             ),
           ),
@@ -852,7 +878,8 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
           'changed_by',
           createErrorHandler(errMsg =>
             t(
-              'An error occurred while fetching dataset datasource values: %s',
+              'An error occurred while fetching %s values: %s',
+              datasetLabelLower(),
               errMsg,
             ),
           ),
@@ -867,7 +894,7 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
 
   const menuData: SubMenuProps = {
     activeChild: 'Datasets',
-    name: t('Datasets'),
+    name: datasetsLabel(),
   };
 
   const buttonArr: Array<ButtonProps> = [];
@@ -877,7 +904,7 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
       name: (
         <Tooltip
           id="import-tooltip"
-          title={t('Import datasets')}
+          title={t('Import %s', datasetsLabelLower())}
           placement="bottomRight"
         >
           <Icons.DownloadOutlined
@@ -914,7 +941,7 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
               items: [
                 {
                   key: 'dataset',
-                  label: t('Dataset'),
+                  label: datasetLabel(),
                   onClick: () => history.push('/dataset/add/'),
                 },
                 {
@@ -946,7 +973,7 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
     } else {
       buttonArr.push({
         icon: <Icons.PlusOutlined iconSize="m" />,
-        name: t('Dataset'),
+        name: datasetLabel(),
         onClick: () => {
           history.push('/dataset/add/');
         },
@@ -1023,7 +1050,11 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
       },
       createErrorHandler(errMsg =>
         addDangerToast(
-          t('There was an issue deleting the selected datasets: %s', errMsg),
+          t(
+            'There was an issue deleting the selected %s: %s',
+            datasetsLabelLower(),
+            errMsg,
+          ),
         ),
       ),
     );
@@ -1031,7 +1062,9 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
 
   const handleDatasetDuplicate = (newDatasetName: string) => {
     if (datasetCurrentlyDuplicating === null) {
-      addDangerToast(t('There was an issue duplicating the dataset.'));
+      addDangerToast(
+        t('There was an issue duplicating the %s.', datasetLabelLower()),
+      );
     }
 
     SupersetClient.post({
@@ -1047,7 +1080,11 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
       },
       createErrorHandler(errMsg =>
         addDangerToast(
-          t('There was an issue duplicating the selected datasets: %s', errMsg),
+          t(
+            'There was an issue duplicating the selected %s: %s',
+            datasetsLabelLower(),
+            errMsg,
+          ),
         ),
       ),
     );
@@ -1061,7 +1098,7 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
           description={
             <>
               <p>
-                {t('The dataset')}
+                {t('The %s', datasetLabelLower())}
                 <b> {datasetCurrentlyDeleting.table_name} </b>
                 {t(
                   'is linked to %s charts that appear on %s dashboards. Are you sure you want to continue? Deleting the dataset will break those objects.',
@@ -1167,7 +1204,7 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
           }}
           onHide={closeDatasetDeleteModal}
           open
-          title={t('Delete Dataset?')}
+          title={t('Delete %s?', datasetLabel())}
         />
       )}
       {svCurrentlyDeleting && (
@@ -1213,7 +1250,8 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
       <ConfirmStatusChange
         title={t('Please confirm')}
         description={t(
-          'Are you sure you want to delete the selected datasets?',
+          'Are you sure you want to delete the selected %s?',
+          datasetsLabelLower(),
         )}
         onConfirm={handleBulkDatasetDelete}
       >
@@ -1296,7 +1334,7 @@ const DatasetList: FunctionComponent<DatasetListProps> = ({
 
       <ImportModelsModal
         resourceName="dataset"
-        resourceLabel={t('dataset')}
+        resourceLabel={datasetLabelLower()}
         passwordsNeededMessage={PASSWORDS_NEEDED_MESSAGE}
         confirmOverwriteMessage={CONFIRM_OVERWRITE_MESSAGE}
         addDangerToast={addDangerToast}
