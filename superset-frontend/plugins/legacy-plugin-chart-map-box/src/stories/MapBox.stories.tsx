@@ -19,7 +19,7 @@
 
 /* eslint-disable no-magic-numbers */
 import { SuperChart } from '@superset-ui/core';
-import { useTheme } from '@apache-superset/core/theme';
+import { useTheme } from '@apache-superset/core/ui';
 import MapBoxChartPlugin from '@superset-ui/legacy-plugin-chart-map-box';
 import { withResizableChartDemo } from '@storybook-shared';
 import { generateData } from './data';
@@ -82,6 +82,7 @@ export const MapBoxViz = ({
   const theme = useTheme();
   return (
     <SuperChart
+      theme={theme}
       chartType="map-box"
       width={width}
       height={height}
