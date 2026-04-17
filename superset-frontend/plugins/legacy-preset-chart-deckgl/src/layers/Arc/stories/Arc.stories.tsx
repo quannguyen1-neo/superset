@@ -20,7 +20,7 @@
 /* eslint-disable sort-keys */
 /* eslint-disable no-magic-numbers */
 import { SuperChart } from '@superset-ui/core';
-import { supersetTheme } from '@apache-superset/core/ui';
+import { supersetTheme } from '@apache-superset/core/theme';
 import { ArcChartPlugin } from '@superset-ui/legacy-preset-chart-deckgl';
 import { withResizableChartDemo } from '@storybook-shared';
 import payload from './payload';
