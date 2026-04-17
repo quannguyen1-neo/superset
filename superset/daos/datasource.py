@@ -91,6 +91,7 @@ class DatasourceDAO(BaseDAO[Datasource]):
     def build_dataset_query(
         name_filter: str | None,
         sql_filter: bool | None,
+        database_id: int | None = None,
     ) -> Select:
         """Build a SELECT for datasets, applying access and content filters."""
         ds_q = select(
@@ -116,11 +117,17 @@ class DatasourceDAO(BaseDAO[Datasource]):
             else:
                 ds_q = ds_q.where(and_(SqlaTable.sql.isnot(None), SqlaTable.sql != ""))
 
+        if database_id is not None:
+            ds_q = ds_q.where(SqlaTable.database_id == database_id)
+
         return ds_q
 
     @staticmethod
-    def build_semantic_view_query(name_filter: str | None) -> Select:
-        """Build a SELECT for semantic views, applying name filter."""
+    def build_semantic_view_query(
+        name_filter: str | None,
+        semantic_layer_uuid: str | None = None,
+    ) -> Select:
+        """Build a SELECT for semantic views, applying name and layer filters."""
         sv_q = select(
             SemanticView.id.label("item_id"),
             literal("semantic_layer").label("source_type"),
@@ -130,6 +137,9 @@ class DatasourceDAO(BaseDAO[Datasource]):
 
         if name_filter:
             sv_q = sv_q.where(SemanticView.name.ilike(f"%{name_filter}%"))
+
+        if semantic_layer_uuid is not None:
+            sv_q = sv_q.where(SemanticView.semantic_layer_uuid == semantic_layer_uuid)
 
         return sv_q
 
