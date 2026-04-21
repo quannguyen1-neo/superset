@@ -1,0 +1,46 @@
+{#
+  query_only_styles.html
+  ----------------------
+  Hides Chart, Dashboard and Dataset nav items and creation UI.
+  SQL Lab remains fully visible.
+  Included via head_custom_extra.html on every page.
+#}
+<style>
+/* -----------------------------------------------------------------------
+   Nav bar — hide Dashboards, Charts and Datasets
+   ----------------------------------------------------------------------- */
+[data-menu-id$="-Dashboards"],
+[data-menu-id$="-Charts"],
+[data-menu-id$="-Datasets"] {
+  display: none !important;
+}
+
+/* -----------------------------------------------------------------------
+   + Create dropdown — hide Chart and Dashboard options
+   ----------------------------------------------------------------------- */
+[data-menu-id$="-Chart"],
+[data-menu-id$="-Dashboard"],
+[data-test="menu-item-Chart"],
+[data-test="menu-item-Dashboard"] {
+  display: none !important;
+}
+
+/* -----------------------------------------------------------------------
+   List page — hide add buttons
+   ----------------------------------------------------------------------- */
+[data-test="add-chart"],
+[data-test="new-chart-button"],
+[data-test="add-dashboard"],
+[data-test="new-dashboard-button"] {
+  display: none !important;
+}
+
+/* -----------------------------------------------------------------------
+   Home page — hide Dashboards (2nd) and Charts (3rd) collapse sections
+   ----------------------------------------------------------------------- */
+.ant-collapse > .ant-collapse-item:nth-child(2),
+.ant-collapse > .ant-collapse-item:nth-child(3) {
+  display: none !important;
+}
+
+</style>

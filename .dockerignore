@@ -43,6 +43,9 @@ superset-frontend/cypress-base/
 superset-frontend/coverage/
 superset-frontend/.temp_cache/
 superset/static/assets/
+!superset/static/assets/images/KAFI_Logo_Solid_Dark.png
+!superset/static/assets/images/KAFI_Logo_Solid_White.png
 superset-websocket/dist/
 venv
 .venv
+
