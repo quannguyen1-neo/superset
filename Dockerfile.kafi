@@ -1,20 +1,15 @@
 #
 # Dockerfile.kafi
 # ---------------
-# Extends the official Superset lean image with:
+# Extends the official Superset dev image with:
 #   - Custom security manager (QueryOnlyMixin)
 #   - Custom middleware (QueryOnlyMiddleware)
 #   - Custom templates (head_custom_extra, query_only_styles, tail_js_custom_extra)
-#   - Kafi logo
+#   - Kafi logos (light + dark)
 #   - Production superset_config.py
 #
 # Build:
-#   docker build -f Dockerfile.kafi -t kafi/superset:1.0.0 .
-#
-# Args:
-#   PY_VER         — Python version (default: 3.11.14-slim-trixie)
-#   BUILD_TRANSLATIONS — include translations (default: false)
-#   INCLUDE_CHROMIUM   — include chromium for thumbnails (default: false)
+#   docker buildx build -f Dockerfile.kafi --target kafi -t kafi/superset:1.0.0 .
 #
 
 ARG PY_VER=3.11.14-slim-trixie
@@ -24,7 +19,7 @@ ARG INCLUDE_CHROMIUM="false"
 ARG INCLUDE_FIREFOX="false"
 
 # -----------------------------------------------------------------------
-# Stage 1: Build frontend (inherits from official superset-node stage)
+# Stage 1: Build frontend
 # -----------------------------------------------------------------------
 FROM --platform=${BUILDPLATFORM} node:20-trixie-slim AS superset-node-ci
 ARG BUILD_TRANSLATIONS
@@ -69,7 +64,7 @@ RUN if [ "${BUILD_TRANSLATIONS}" = "true" ]; then \
 
 
 # -----------------------------------------------------------------------
-# Stage 2: Python base (same as upstream)
+# Stage 2: Python base
 # -----------------------------------------------------------------------
 FROM python:${PY_VER} AS python-base
 
@@ -178,25 +173,37 @@ EXPOSE ${SUPERSET_PORT}
 
 
 # -----------------------------------------------------------------------
-# Stage 5: Lean + Kafi customizations
+# Stage 5: Dev — full dependencies (authlib, psycopg2, all extras)
 # -----------------------------------------------------------------------
-FROM python-common AS kafi
+FROM python-common AS dev
 
-# Install Python dependencies
-COPY requirements/base.txt requirements/
+RUN /app/docker/apt-install.sh \
+    git \
+    pkg-config \
+    default-libmysqlclient-dev
+
+COPY requirements/*.txt requirements/
 COPY superset-core superset-core
+COPY superset-extensions-cli superset-extensions-cli
 
 RUN --mount=type=cache,target=${SUPERSET_HOME}/.cache/uv \
-    /app/docker/pip-install.sh --requires-build-essential -r requirements/base.txt
+    /app/docker/pip-install.sh --requires-build-essential -r requirements/development.txt
 
 RUN --mount=type=cache,target=${SUPERSET_HOME}/.cache/uv \
     uv pip install -e .
 
+RUN uv pip install .[postgres]
 RUN python -m compileall /app/superset
 
+USER superset
+
+
 # -----------------------------------------------------------------------
-# Kafi customizations — layered on top of lean
+# Stage 6: Kafi — extends dev with customizations
 # -----------------------------------------------------------------------
+FROM dev AS kafi
+
+USER root
 
 # 1. Custom Python package
 COPY superset/custom /app/superset/custom
@@ -209,15 +216,17 @@ COPY superset/templates/tail_js_custom_extra.html \
 COPY superset/templates/query_only_styles.html \
      /app/superset/templates/query_only_styles.html
 
-# 3. Kafi logo
+# 3. Kafi logos
 COPY superset/static/assets/images/KAFI_Logo_Solid_Dark.png \
      /app/superset/static/assets/images/KAFI_Logo_Solid_Dark.png
+COPY superset/static/assets/images/KAFI_Logo_Solid_White.png \
+     /app/superset/static/assets/images/KAFI_Logo_Solid_White.png
 
-# 4. Production config — mounted at PYTHONPATH
+# 4. Production config
 COPY docker/pythonpath_dev/superset_config_docker.py \
      /app/pythonpath/superset_config.py
 
-# Recompile to pick up custom package
+# Recompile custom package
 RUN python -m compileall /app/superset/custom
 
 USER superset
